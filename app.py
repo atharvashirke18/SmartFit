@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import pickle
 import PyPDF2
 import re
+import os
 from feature_engineer import extract_features
 
 app = Flask(__name__)
@@ -77,4 +78,13 @@ def recommend():
 @app.route('/api/stats', methods=['GET'])
 def get_stats(): return jsonify({'success': True, 'total_jobs': len(jobs_df), 'total_skills': len(KNOWN_SKILLS)})
 
-if __name__ == '__main__': app.run(debug=True, port=5000)
+@app.route('/', methods=['GET'])
+def serve_root():
+    return send_from_directory('frontend', 'index.html')
+
+@app.route('/<path:filename>', methods=['GET'])
+def serve_frontend(filename):
+    return send_from_directory('frontend', filename)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
